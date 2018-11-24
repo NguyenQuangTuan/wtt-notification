@@ -6,9 +6,6 @@
  * create, update, delete, tùy từng nghiệp vụ mà có thể  thêm 1 số hàm
  */
 
-const underscore = require('underscore')
-const until = require('../utils/index')
-
 module.exports = class ProductRepository {
   constructor(db_context) {
     this.db_context = db_context
@@ -72,9 +69,8 @@ module.exports = class ProductRepository {
       .create(product)
       .then(res => {
         if (!res) return callback(null, null)
-        else {
-          res = until.parse_object(res.dataValues)
-          callback(null, res)
+        else {          
+          callback(null, res.dataValues)
           return null
         }
       })
