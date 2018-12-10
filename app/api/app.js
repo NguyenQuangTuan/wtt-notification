@@ -15,30 +15,39 @@ app.use(body_parser.json())
 
 // Data Context
 const mysql_data_context = require('../../repositories/mysql-context')(config.mysql)
-// mysql_data_context.sequelize.sync()
-// // Repositories
-const ProductRepository = require('../../repositories/product-repository')
+mysql_data_context.sequelize.sync()
 
-const product_repository = new ProductRepository(mysql_data_context)
+// // Repositories
+const NotificationRepository = require('../../repositories/notification-repository')
+const UserRepository = require('../../repositories/user-repository')
+
+const notification_repository = new NotificationRepository(mysql_data_context)
+const user_repository = new UserRepository(mysql_data_context)
 
 // Message Queue
 
 
 // Services
-const ProductService = require('../../services/product-service')
+const NotificationService = require('../../services/notification-service')
+const UserService = require('../../services/user-service')
 
-const product_service = new ProductService(product_repository)
+const notification_service = new NotificationService(notification_repository)
+const user_service = new UserService(user_repository)
 
 // Controllers
-const ProductController = require('./controllers/product-controller')
+const NotificationController = require('./controllers/notification-controller')
+const UserController = require('./controllers/user-controller')
 
-const product_controller = new ProductController(product_service)
+const notification_controller = new NotificationController(notification_service)
+const user_controller = new UserController(user_service)
 
 // Routes
-require('./routes/product-route')(app, product_controller)
+require('./routes/notification-route')(app, notification_controller)
+require('./routes/user-route')(app, user_controller)
 
 // Error Handling
 app.use((err, req, res, next) => {
+  console.log(err);
   if (err.type) {
     let { type, message, detail } = err
     let error = { type }

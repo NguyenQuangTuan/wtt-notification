@@ -1,4 +1,4 @@
-const Variant = require('./variant')
+// const Variant = require('./variant')
 
 const Product = function (params) {
   let self = this

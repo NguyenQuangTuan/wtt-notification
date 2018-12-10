@@ -21,6 +21,15 @@
       "env": {
         "NODE_ENV": "local"
       }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Api app",
+      "program": "${workspaceFolder}/app/api/app.js",
+      "env": {
+        "NODE_ENV": "local"
+      }
     }
   ]
 }
