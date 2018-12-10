@@ -13,7 +13,6 @@ exports.verify = function (req, res, next) {
     }
     else {
       Object.assign(req.authen_user, { ...decoded })
-      req.authen_valid = false
       next()
     }
   })
