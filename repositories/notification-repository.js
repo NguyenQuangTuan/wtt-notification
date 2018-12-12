@@ -12,6 +12,7 @@ module.exports = class NotificationRepository {
     this.get_unseen_number = this.get_unseen_number.bind(this)
     this.add_notify_user = this.add_notify_user.bind(this)
     this.mark_seen = this.mark_seen.bind(this)
+    this.mark_seen_all = this.mark_seen_all.bind(this)
     this.create = this.create.bind(this)
     this.createNotify = this.createNotify.bind(this)
     this.update = this.update.bind(this)
@@ -85,7 +86,8 @@ module.exports = class NotificationRepository {
       })
   }
 
-  add_notify_user(notification_id, users, callback) {
+  add_notify_user(notification_id, users) {
+    console.log(users);
     let user_notification_obj_arr = users.map(user_id => {
       return {
         notification_id,
@@ -117,6 +119,23 @@ module.exports = class NotificationRepository {
           notification_id: {
             [this.Op.in]: notifications
           }
+        }
+      })
+      .then((res) => {
+        callback(null, {success: true})
+        return null
+      })
+      .catch(err => {
+        console.log(err)
+        callback(err)
+        return null
+      })
+  }
+  mark_seen_all(user_id, callback) {
+    this.UserNotification
+      .update({ seen: true }, {
+        where: {
+          user_id
         }
       })
       .then((res) => {

@@ -13,6 +13,7 @@ module.exports = class {
     this.find_by_user = this.find_by_user.bind(this)
     this.get_unseen_number = this.get_unseen_number.bind(this)
     this.mark_seen = this.mark_seen.bind(this)
+    this.mark_seen_all = this.mark_seen_all.bind(this)
   }
 
 
@@ -37,6 +38,18 @@ module.exports = class {
       else {
         console.log(count)
         res.result = { count }
+        next()
+      }
+    })
+  }
+
+  mark_seen_all(req, res, next) {
+    let { user_id } = req.authen_user
+    this.notification_service.mark_seen_all(user_id, (err, result) => {
+      if (err) next(err)
+      else {
+        console.log(result)
+        res.result = result;
         next()
       }
     })

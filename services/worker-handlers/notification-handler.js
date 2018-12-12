@@ -37,7 +37,7 @@ module.exports = class NotificationHandler {
       .then(newNotification => {
         // danh dau notification cho nguoi dung
         return this.notification_repository
-          .add_notify_user(newNotification.notification_id, post.user_follows)
+          .add_notify_user(newNotification.notification_id, payload.user_follows)
       })
       .then(res => {
         return this.user_repository.get_refresh_tokens(payload.user_follows)

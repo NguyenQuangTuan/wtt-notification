@@ -140,6 +140,7 @@ module.exports = class UserRepository {
                     }
                 )
                 .then(res => {
+                    console.log(res)
                     let refresh_token_arr = res.map(item => item.dataValues.refresh_token)
                     console.log(refresh_token_arr);
                     resolve(refresh_token_arr)

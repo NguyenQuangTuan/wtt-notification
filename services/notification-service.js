@@ -20,6 +20,7 @@ module.exports = class {
     this.find_by_user = this.find_by_user.bind(this)
     this.get_unseen_number = this.get_unseen_number.bind(this)
     this.mark_seen = this.mark_seen.bind(this)
+    this.mark_seen_all = this.mark_seen_all.bind(this)
     this.add_notify_user = this.add_notify_user.bind(this)
     this.create = this.create.bind(this)
     this.update = this.update.bind(this)
@@ -73,6 +74,22 @@ module.exports = class {
     async.retry(
       config.retry,
       async.apply(this.notification_repository.mark_seen, user_id, notifications),
+      (err, result) => {
+        if (err) {
+          return callback(err)
+        }
+        if (!result) {
+          return callback({ type: 'Not Found' })
+        }
+        return callback(err, result)
+      }
+    )
+  }
+
+  mark_seen_all(user_id, callback) {
+    async.retry(
+      config.retry,
+      async.apply(this.notification_repository.mark_seen_all, user_id),
       (err, result) => {
         if (err) {
           return callback(err)
