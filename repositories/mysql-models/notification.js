@@ -3,14 +3,16 @@ const Sequelize = require('sequelize');
 module.exports = function (sequelize, DataTypes) {
   return sequelize.define('notification', {
     notification_id: {
-      type: DataTypes.INTEGER,
-      unique: true,
       primaryKey: true,
-      allowNull: false,
-      autoIncrement: true
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4
     },
     content: {
-      type: DataTypes.STRING(500),
+      type: DataTypes.JSON,
+      allowNull: false
+    },
+    type: {
+      type: DataTypes.STRING(30),
       allowNull: false
     },
     created_at: Sequelize.DATE

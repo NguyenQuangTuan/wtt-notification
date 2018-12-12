@@ -3,18 +3,17 @@ module.exports = class NotificationRepository {
     this.db_context = db_context
     this.sequelize = db_context.sequelize
     this.Notification = db_context.Notification
-    this.Topic = db_context.Topic
-    this.UserTopic = db_context.UserTopic
-    this.UserUnseen = db_context.UserUnseen
+    this.UserNotification = db_context.UserNotification
     this.Op = db_context.sequelize.Op;
 
     this.find_all = this.find_all.bind(this)
     this.find_one = this.find_one.bind(this)
     this.find_by_user = this.find_by_user.bind(this)
     this.get_unseen_number = this.get_unseen_number.bind(this)
-    this.add_unseen_notify = this.add_unseen_notify.bind(this)
+    this.add_notify_user = this.add_notify_user.bind(this)
     this.mark_seen = this.mark_seen.bind(this)
     this.create = this.create.bind(this)
+    this.createNotify = this.createNotify.bind(this)
     this.update = this.update.bind(this)
     this.delete = this.delete.bind(this)
   }
@@ -41,22 +40,22 @@ module.exports = class NotificationRepository {
   }
 
   find_by_user({ page, size, user_id }, callback) {
-    this.UserTopic
+    this.UserNotification
       .findAll({
-        attributes: ['topic_id'],
+        attributes: ['notification_id'],
         where: { user_id }
       })
-      .then(res1 => res1 = res1.map(ck => ck.dataValues.topic_id))
-      .then(topics => this.Notification
+      .then(res1 => res1 = res1.map(ck => ck.dataValues.notification_id))
+      .then(notifications => this.Notification
         .findAll({
           where: {
-            topic_id: {
-              [this.Op.in]: topics
+            notification_id: {
+              [this.Op.in]: notifications
             }
           },
           limit: size,
           offset: page * size,
-          order: [['created_at', 'DESC' ]]
+          order: [['created_at', 'DESC']]
         }))
       .then(res => {
         res = res.map(ck => ck.dataValues)
@@ -71,16 +70,12 @@ module.exports = class NotificationRepository {
   }
 
   get_unseen_number(user_id, callback) {
-    this.UserUnseen
-      .findOne({
-        where: { user_id }
+    this.UserNotification
+      .count({
+        where: { user_id, seen: false }
       })
-      .then(find_instance => {
-        if (!find_instance || !find_instance.dataValues) {
-          callback(null, null)
-          return null
-        }
-        callback(null, find_instance.unseen.length)
+      .then(res => {
+        callback(null, res)
         return null
       })
       .catch(err => {
@@ -90,49 +85,42 @@ module.exports = class NotificationRepository {
       })
   }
 
-  add_unseen_notify(user_id, notification, callback) {
-    this.UserUnseen
-      .findOne({
-        where: { user_id }
-      })
-      .then(find_instance => {
-        if (!find_instance || !find_instance.dataValues) {
-          callback(null, null)
+  add_notify_user(notification_id, users, callback) {
+    let user_notification_obj_arr = users.map(user_id => {
+      return {
+        notification_id,
+        user_id
+      }
+    })
+    console.log(user_notification_obj_arr);
+    return new Promise((resolve, reject) => {
+      this.UserNotification
+        .bulkCreate(user_notification_obj_arr)
+        .then(() => {
+          resolve({ success: true })
           return null
-        }
-        let unseenNow = find_instance.dataValues.unseen.split(',');
-        if (unseenNow.indexOf(notification) >= 0) {
-          callback(null, { added: true })
-          return null;
-        }
-        unseenNow.push(notification);
-        console.log(unseenNow)
-        return find_instance.update({ unseen: unseenNow });
-      })
-      .catch(err => {
-        console.log(err)
-        callback(err)
-        return null
-      })
+        })
+        .catch(err => {
+          console.log(err)
+          reject(err)
+          return null
+        })
+    })
+
   }
 
   mark_seen(user_id, notifications, callback) {
-    this.UserUnseen
-      .findOne({
-        where: { user_id }
-      })
-      .then(find_instance => {
-        if (!find_instance || !find_instance.dataValues) {
-          callback(null, null)
-          return null
+    this.UserNotification
+      .update({ seen: true }, {
+        where: {
+          user_id,
+          notification_id: {
+            [this.Op.in]: notifications
+          }
         }
-        let unseenBefore = find_instance.dataValues.unseen.split(',');
-        console.log(notifications);
-        let unseenAfter = unseenBefore.filter(notify => notifications.indexOf(notify) < 0);
-        console.log(unseenAfter)
-        return find_instance.update({ unseen: unseenAfter });
-      }).then(() => {
-        callback(null, { success: true })
+      })
+      .then((res) => {
+        callback(null, {success: true})
         return null
       })
       .catch(err => {
@@ -170,22 +158,18 @@ module.exports = class NotificationRepository {
       .create(notification)
       .then(res => {
         if (!res) return callback(null, null)
-        console.log(res);
-        return this.Topic.findOne({
-          where: {
-            topic_id: res.topic_id
-          },
-          raw: true
-        })
-      })
-      .then(topic => {
-        console.log(topic);
+        callback(null, res.dataValues)
+        return null
       })
       .catch(err => {
         console.log(err)
         callback(err)
         return null
       })
+  }
+
+  createNotify(notification) {
+    return this.Notification.create(notification)
   }
 
   update(condition, notifcation_obj, callback) {

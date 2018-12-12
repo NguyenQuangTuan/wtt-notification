@@ -4,7 +4,14 @@ const workers = require('../../config/workers/' + process.env.NODE_ENV)
 // Data Context
 const mysql_data_context = require('../../repositories/mysql-context')(config.mysql)
 
-// Repositories
+// // Repositories
+const NotificationRepository = require('../../repositories/notification-repository')
+const UserRepository = require('../../repositories/user-repository')
+
+const notification_repository = new NotificationRepository(mysql_data_context)
+const user_repository = new UserRepository(mysql_data_context)
+
+// Message Queue
 
 
 // External Services
@@ -20,7 +27,7 @@ const kafka_producer = new KafkaProducer(config.message_producer.options, config
 // Handlers
 const NotificationHandler = require('../../services/worker-handlers/notification-handler')
 
-const notification_handler = new NotificationHandler()
+const notification_handler = new NotificationHandler(notification_repository, user_repository)
 
 const handlers = { notification_handler }
 

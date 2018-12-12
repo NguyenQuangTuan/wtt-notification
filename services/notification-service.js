@@ -20,7 +20,7 @@ module.exports = class {
     this.find_by_user = this.find_by_user.bind(this)
     this.get_unseen_number = this.get_unseen_number.bind(this)
     this.mark_seen = this.mark_seen.bind(this)
-    this.add_unseen_notify = this.add_unseen_notify.bind(this)
+    this.add_notify_user = this.add_notify_user.bind(this)
     this.create = this.create.bind(this)
     this.update = this.update.bind(this)
     this.delete = this.delete.bind(this)
@@ -46,10 +46,10 @@ module.exports = class {
     )
   }
 
-  add_unseen_notify(user_id, notification, callback){
+  add_notify_user(notification_id, users, callback){
     async.retry(
       config.retry,
-      async.apply(this.notification_repository.add_unseen_notify, user_id, notification),
+      async.apply(this.notification_repository.add_notify_user, notification_id, users),
       (err, result) => {
         return callback(err, result)
       }
@@ -63,9 +63,6 @@ module.exports = class {
       (err, result) => {
         if (err) {
           return callback(err)
-        }
-        if (!result) {
-          return callback({ type: 'Not Found' })
         }
         return callback(err, result)
       }
@@ -101,7 +98,6 @@ module.exports = class {
   }
 
   create(notification, callback) {
-    console.log(notification);
     let new_notification = new Notification(notification)
     async.retry(
       config.retry,

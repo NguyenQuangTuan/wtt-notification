@@ -8,4 +8,4 @@ fcm_admin.initializeApp({
     databaseURL: `https://${serviceAccount.project_id}.firebaseio.com`
 })
 process.env.GCLOUD_PROJECT = serviceAccount.project_id;
-export default fcm_admin;
+module.exports = fcm_admin;

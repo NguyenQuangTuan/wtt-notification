@@ -7,7 +7,7 @@ const validator = new Validator()
 let user = {
   type: 'object',
   props: {
-    user_id: { type: 'number', integer: true, require: true},
+    user_id: { type: 'string', require: true},
     refresh_token: { type: 'string' , require: true},
   }
 

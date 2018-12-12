@@ -1,16 +1,17 @@
 const async = require('async')
 const config = require('../../config/config')
 const PostEvent = require('../../domain-models/event/post-event')
-const topic_enum = require('../../repositories/enums/topic')
 const sendMessage = require('../fcm/send-message')
 module.exports = class NotificationHandler {
-  constructor(notification_service, topic_service) {
-    this.notification_service = notification_service;
-    this.topic_service = topic_service;
+  constructor(notification_repository, user_repository) {
+    this.notification_repository = notification_repository;
+    this.user_repository = user_repository;
     this.handle = this.handle.bind(this)
+    this.handle_post_created = this.handle_post_created.bind(this)
   }
 
   handle({ action, payload }, callback) {
+    console.log(action);
     switch (action) {
       case PostEvent.POST_CREATED:
         this.handle_post_created(payload, callback)
@@ -28,55 +29,109 @@ module.exports = class NotificationHandler {
 
   handle_post_created(payload, callback) {
     let { post } = payload
-    console.log(post)
-    // tao topic moi cua post
-    this.topic_service.create({
-      topic_id: post.post_id,
-      type: topic_enum.POST
-    }).then((err1, newTopic) => {
-      if (err1) {
-        callback(err1)
-        return
-      }
-      //save notifcation vao db
-      return this.notification_service.create({
-        topic_id: newTopic.topic_id,
-        content: `${post.full_name} đã đăng một bài viết mới`
-      })
-    }).then((err2, newNotification) => {
-      if (err2) {
-        callback(err2);
-        return
-      }
-      // lay danh sach nguoi dung theo doi user dang post
-      return this.topic_service.get_all_user_by_topic(post.user_id, topic_enum.USER)
-    }).then((err3, sub_users) => {
-      if (err3) {
-        callback(err3);
-        return
-      }
-      let processes = sub_users.map(sub_user => {
-        sendMessage({ newNotification }, sub_user.refresh_token)       // push notify cho nguoi dung
-        return this.notification_service.add_unseen_notify(sub_user.user_id, newNotification.notification_id); // danh dau chua xem
-      });
-      return Promise.all(processes);
-    }).then(() => {
-      callback(null, { success: true });
-      return null;
-    }).catch(error => {
-      callback(error);
-      return null;
+    console.log(payload)
+    this.notification_repository.createNotify({
+      content: post,
+      type: PostEvent.POST_CREATED
     })
+      .then(newNotification => {
+        // danh dau notification cho nguoi dung
+        return this.notification_repository
+          .add_notify_user(newNotification.notification_id, post.user_follows)
+      })
+      .then(res => {
+        return this.user_repository.get_refresh_tokens(payload.user_follows)
+      })
+      .then(refresh_tokens => {
+        try {
+          refresh_tokens.forEach(item => {
+            sendMessage({
+              title: PostEvent.POST_CREATED,
+              body: JSON.stringify(post)
+            }, item)
+          });
+        } catch (error) {
+          console.log(error);
+        }
+        callback(null, { success: true });
+        return null
+      })
+      .catch(error => {
+        console.log(error);
+        callback(error);
+        return null;
+      })
   }
 
   handle_review_created(payload, callback) {
     let { post, review } = payload
-    console.log(review)
+    console.log(post)
+
+    this.notification_repository.createNotify({
+      content: payload,
+      type: PostEvent.REVIEW_CREATED
+    })
+      .then(newNotification => {
+        // danh dau notification cho nguoi dung
+        return this.notification_repository
+          .add_notify_user(newNotification.notification_id, [post.user_id])
+      })
+      .then(res => {
+        return this.user_repository.get_refresh_tokens([post.user_id])
+      })
+      .then(refresh_tokens => {
+        try {
+          refresh_tokens.forEach(item => {
+            sendMessage({
+              title: PostEvent.REVIEW_CREATED,
+              body: JSON.stringify(payload)
+            }, item)
+          });
+        } catch (error) {
+          console.log(error);
+        }
+        callback(null, { success: true });
+        return null
+      })
+      .catch(error => {
+        callback(error);
+        return null;
+      })
   }
 
   handle_sub_review_created(payload, callback) {
     let { sub_review, review } = payload
     console.log(sub_review)
+    this.notification_repository.createNotify({
+      content: payload,
+      type: PostEvent.SUB_REVIEW_CREATED
+    })
+      .then(newNotification => {
+        // danh dau notification cho nguoi dung
+        return this.notification_repository
+          .add_notify_user(newNotification.notification_id, [review.user_id])
+      })
+      .then(res => {
+        return this.user_repository.get_refresh_tokens([review.user_id])
+      })
+      .then(refresh_tokens => {
+        try {
+          refresh_tokens.forEach(item => {
+            sendMessage({
+              title: PostEvent.SUB_REVIEW_CREATED,
+              body: JSON.stringify(payload)
+            }, item)
+          });
+        } catch (error) {
+          console.log(error);
+        }
+        callback(null, { success: true });
+        return null
+      })
+      .catch(error => {
+        callback(error);
+        return null;
+      })
   }
 
 }

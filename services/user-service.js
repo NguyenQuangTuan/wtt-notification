@@ -19,8 +19,9 @@ module.exports = class {
     this.find_one = this.find_one.bind(this)
     this.create = this.create.bind(this)
     this.update = this.update.bind(this)
-    this.update_or_create = this.update_or_create.bind(this)
     this.delete = this.delete.bind(this)
+    this.update_or_create = this.update_or_create.bind(this)
+    this.get_refresh_tokens = this.get_refresh_tokens.bind(this)
   }
 
   find_all(condition, select, offset, limit, order_by, callback) {
@@ -66,6 +67,26 @@ module.exports = class {
     )
   }
 
+  delete(condition, callback) {
+    async.retry(
+      config.retry,
+      async.apply(this.user_repository.delete, condition),
+      (err, deleted) => {
+        return callback(err, deleted)
+      }
+    )
+  }
+
+  get_refresh_tokens(users, callback) {
+    async.retry(
+      config.retry,
+      async.apply(this.user_repository.get_refresh_tokens, users),
+      (err, refresh_tokens) => {
+        return callback(err, refresh_tokens)
+      }
+    )
+  }
+  
   update_or_create(user, callback) {
     let new_user = new User(user)
     async.retry(
@@ -73,16 +94,6 @@ module.exports = class {
       async.apply(this.user_repository.update_or_create, new_user),
       (err, result) => {
         return callback(err, result)
-      }
-    )
-  }
-
-  delete(condition, callback) {
-    async.retry(
-      config.retry,
-      async.apply(this.user_repository.delete, condition),
-      (err, deleted) => {
-        return callback(err, deleted)
       }
     )
   }

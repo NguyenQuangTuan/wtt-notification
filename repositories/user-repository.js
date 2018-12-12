@@ -1,17 +1,16 @@
-const topic_enum = require('./enums/topic');
-
+const Sequelize = require('sequelize')
 module.exports = class UserRepository {
     constructor(db_context) {
         this.db_context = db_context;
         this.sequelize = db_context.sequelize;
         this.User = db_context.User;
-        this.Topic = db_context.Topic;
-        
+
         this.find_all = this.find_all.bind(this)
         this.find_one = this.find_one.bind(this)
         this.create = this.create.bind(this)
         this.update = this.update.bind(this)
         this.update_or_create = this.update_or_create.bind(this)
+        this.get_refresh_tokens = this.get_refresh_tokens.bind(this)
         this.delete = this.delete.bind(this)
     }
 
@@ -67,11 +66,8 @@ module.exports = class UserRepository {
                 else {
                     let created = res.dataValues;
                     callback(null, created)
-                    return created
+                    return null
                 }
-            })
-            .then(newUser => {
-                this.Topic.create({ topic_id: newUser.user_id, type: topic_enum.User })
             })
             .catch(err => {
                 console.log(err)
@@ -97,8 +93,8 @@ module.exports = class UserRepository {
     }
 
     update_or_create(user_obj, callback) {
-        let { user_id } = user_obj;
-        this.User.findOne({ where: { user_id } })
+        let { user_id, refresh_token } = user_obj;
+        this.User.findOne({ where: { user_id, refresh_token } })
             .then(_user => {
                 if (_user) {
                     return _user.update(user_obj);
@@ -118,8 +114,7 @@ module.exports = class UserRepository {
 
     delete(condition, callback) {
         this.User
-            .update(
-                { shows: false },
+            .destroy(
                 { where: condition }
             )
             .then(res => {
@@ -130,6 +125,33 @@ module.exports = class UserRepository {
                 callback(err)
                 return null
             })
+    }
+
+    get_refresh_tokens(users) {
+        return new Promise((resolve, reject) => {
+            this.User
+                .findAll(
+                    {
+                        where: {
+                            user_id: {
+                                [Sequelize.Op.in]: users
+                            }
+                        }
+                    }
+                )
+                .then(res => {
+                    let refresh_token_arr = res.map(item => item.dataValues.refresh_token)
+                    console.log(refresh_token_arr);
+                    resolve(refresh_token_arr)
+                    return null
+                })
+                .catch(err => {
+                    console.log(err)
+                    reject(err)
+                    return null
+                })
+        })
+
     }
 
 
