@@ -1,0 +1,7 @@
+apps:
+  - script   : './app/api/app.js'
+    name     : 'wtt-notification-api'
+    exec_mode: 'cluster'
+    instances: 1
+  - script   : './app/worker/app.js'
+    name     : 'wtt-notification-worker'

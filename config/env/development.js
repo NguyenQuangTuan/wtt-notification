@@ -4,7 +4,7 @@ module.exports = {
 		username: 'wtt',
 		password: 'Wtt@20181',
 		database: 'wtt-notification',
-		host: '18.191.51.82',
+		host: '18.223.166.127',
 		dialect: 'mysql',
 		dialectOptions: { charset: 'utf8mb4', decimalNumbers: true },
 		define: { charset: 'utf8mb4', collate: 'utf8mb4_unicode_ci' },
