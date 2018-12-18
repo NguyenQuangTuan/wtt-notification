@@ -66,7 +66,10 @@ module.exports = class NotificationHandler {
   handle_review_created(payload, callback) {
     let { post, review } = payload
     console.log(post)
-
+    if (post.user_id == review.user_id) {
+      callback(null, null);
+      return null;
+    }
     this.notification_repository.createNotify({
       content: payload,
       type: PostEvent.REVIEW_CREATED
@@ -101,7 +104,10 @@ module.exports = class NotificationHandler {
 
   handle_sub_review_created(payload, callback) {
     let { sub_review, review } = payload
-    console.log(sub_review)
+    if (sub_review.user_id == review.user_id) {
+      callback(null, null);
+      return null;
+    }
     this.notification_repository.createNotify({
       content: payload,
       type: PostEvent.SUB_REVIEW_CREATED
