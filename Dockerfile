@@ -20,11 +20,11 @@
 # CMD ["python", "app.py"]
 
 FROM node:9.11.1-alpine
-RUN mkdir -p /usr/src/wtt-noti
-WORKDIR /usr/src/wtt-noti
-COPY package.json /usr/src/wtt-noti
+RUN mkdir -p /usr/src/wtt-notification
+WORKDIR /usr/src/wtt-notification
+COPY package.json /usr/src/wtt-notification
 RUN npm install
+COPY . /usr/src/wtt-notification
 RUN npm install pm2 -g
-COPY . /usr/src/wtt-noti
 EXPOSE  8080
-CMD [ "node", "./app/api/app.js" ]
+CMD [ "pm2-runtime", "./launcher/server.yml" ]
