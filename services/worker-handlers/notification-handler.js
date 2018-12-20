@@ -48,7 +48,7 @@ module.exports = class NotificationHandler {
             sendMessage({
               title: `${post.full_name} đã đăng một bài viết mới`,
               body: post.title,
-              click_action: `https://tuannq.ml/posts/${post.post_id}`,
+              // click_action: `https://tuannq.ml/posts/${post.post_id}`,
               icon: "https://tuannq.ml/img/logo.png"
             }, item)
           });
@@ -90,7 +90,7 @@ module.exports = class NotificationHandler {
             sendMessage({
               title: `${review.full_name} đã bình luận về bài viết của bạn`,
               body: review.content,
-              click_action: `https://tuannq.ml/posts/${post.post_id}`,
+              // click_action: `https://tuannq.ml/posts/${post.post_id}`,
               icon: "https://tuannq.ml/img/logo.png"
             }, item)
           });
@@ -130,7 +130,7 @@ module.exports = class NotificationHandler {
             sendMessage({
               title: `${sub_review.full_name} đã trả lời một bình luận của bạn`,
               body: sub_review.content,
-              click_action: `https://tuannq.ml/posts/${review.post_id}`,
+              // click_action: `https://tuannq.ml/posts/${review.post_id}`,
               icon: "https://tuannq.ml/img/logo.png"
             }, item)
           });
