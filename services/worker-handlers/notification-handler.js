@@ -46,8 +46,10 @@ module.exports = class NotificationHandler {
         try {
           refresh_tokens.forEach(item => {
             sendMessage({
-              title: PostEvent.POST_CREATED,
-              body: JSON.stringify(post)
+              "title": `${post.full_name} đã đăng một bài viết mới`,
+              "body": post.title,
+              "click_action": `https://tuannq.ml/posts/${post.post_id}`,
+              "icon": "https://tuannq.ml/img/logo.png"
             }, item)
           });
         } catch (error) {
@@ -86,8 +88,10 @@ module.exports = class NotificationHandler {
         try {
           refresh_tokens.forEach(item => {
             sendMessage({
-              title: PostEvent.REVIEW_CREATED,
-              body: JSON.stringify(payload)
+              "title": `${review.full_name} đã bình luận về bài viết của bạn`,
+              "body": review.content,
+              "click_action": `https://tuannq.ml/posts/${post.post_id}`,
+              "icon": "https://tuannq.ml/img/logo.png"
             }, item)
           });
         } catch (error) {
@@ -124,8 +128,10 @@ module.exports = class NotificationHandler {
         try {
           refresh_tokens.forEach(item => {
             sendMessage({
-              title: PostEvent.SUB_REVIEW_CREATED,
-              body: JSON.stringify(payload)
+              "title": `${sub_review.full_name} đã trả lời một bình luận của bạn`,
+              "body": sub_review.content,
+              "click_action": `https://tuannq.ml/posts/${review.post_id}`,
+              "icon": "https://tuannq.ml/img/logo.png"
             }, item)
           });
         } catch (error) {
